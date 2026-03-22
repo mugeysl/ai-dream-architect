@@ -1,6 +1,5 @@
 /**
  * Vercel Serverless Function - Rüya Analiz Proxy
- * Bu dosya API anahtarını güvenli bir şekilde sunucu tarafında tutar.
  */
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -14,8 +13,14 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'API anahtarı sunucuda tanımlanmamış.' });
     }
 
-    // Kullanıcının anahtarıyla uyumlu olduğu test edilen model
-    const MODEL_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // Kota sorunlarını aşmak için denenecek modeller (Öncelik sırasına göre)
+    const MODELS = [
+        "gemini-2.5-flash",
+        "gemini-1.5-flash",
+        "gemini-1.5-flash-8b",
+        "gemini-2.0-flash-lite",
+        "gemini-pro"
+    ];
 
     const prompt = `Aşağıdaki rüyayı bir Rüya Analisti gibi analiz et ve sonucu SADECE geçerli bir JSON formatında döndür. Hiçbir açıklama ekleme, sadece JSON.
     
@@ -31,32 +36,43 @@ export default async function handler(req, res) {
     Duygu değerleri 0-100 arasında olmalıdır.
     Rüya: "${text}"`;
 
-    try {
-        const response = await fetch(MODEL_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }]
-            })
-        });
+    let lastError = null;
 
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error("Gemini API Hatası:", data);
-            return res.status(response.status).json({ 
-                error: data.error?.message || `API Hatası: ${response.status}`,
-                details: data 
+    for (const model of MODELS) {
+        try {
+            console.log(`Model deneniyor: ${model}`);
+            const MODEL_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+            
+            const response = await fetch(MODEL_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }]
+                })
             });
-        }
 
-        if (!data.candidates || data.candidates.length === 0) {
-            return res.status(500).json({ error: "Yapay zeka rüyayı işleyemedi, lütfen tekrar deneyin." });
-        }
+            const data = await response.json();
 
-        return res.status(200).json(data);
-    } catch (error) {
-        console.error("Serverless Function Hatası:", error);
-        return res.status(500).json({ error: 'Sunucuyla iletişim kurulurken bir hata oluştu.' });
+            if (response.ok && data.candidates && data.candidates.length > 0) {
+                console.log(`Başarılı model: ${model}`);
+                return res.status(200).json(data);
+            }
+
+            lastError = data.error?.message || `API Hatası (${model}): ${response.status}`;
+            console.warn(`${model} başarısız oldu: ${lastError}`);
+            
+            // Eğer 404 (model bulunamadı) veya 429 (quota) ise bir sonrakine geç
+            continue; 
+
+        } catch (error) {
+            lastError = error.message;
+            console.error(`${model} sistem hatası:`, error);
+        }
     }
+
+    // Hiçbir model çalışmadıysa
+    return res.status(500).json({ 
+        error: "Şu an tüm yapay zeka hatları dolu. Lütfen biraz sonra tekrar deneyin.",
+        details: lastError 
+    });
 }
