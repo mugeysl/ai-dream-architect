@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌙 Rüya Mimarı | AI Dream Architect</title>
+    <meta name="description" content="Yapay zeka destekli rüya analizi ve duygu haritalama uygulaması.">
+    <!-- Google Fonts: Outfit and Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="stars-container"></div>
+    <div class="nebula"></div>
+    
+    <main class="container">
+        <header class="header animate-in">
+            <div class="logo">
+                <i class="fas fa-moon"></i>
+                <h1>Rüya Mimarı</h1>
+            </div>
+            <p class="subtitle">Bilinçaltının derinliklerini yapay zeka ile keşfedin.</p>
+        </header>
+
+        <section class="input-section animate-in" style="animation-delay: 0.1s;">
+            <div class="glass-card">
+                <textarea id="dream-input" placeholder="Dün gece rüyanda ne gördün? Detayları buraya yazabilirsin..." spellcheck="false"></textarea>
+                <div class="card-footer">
+                    <button id="analyze-btn" class="primary-btn">
+                        <span>Analiz Et</span>
+                        <i class="fas fa-sparkles"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="result-section" class="result-section hidden">
+            <!-- Kullanıcının Orijinal Rüyası -->
+            <div class="glass-card user-dream-card animate-in">
+                <h3><i class="fas fa-feather-pointed"></i> Senin Rüyan</h3>
+                <p id="display-user-dream"></p>
+            </div>
+
+            <div class="grid-layout">
+                <!-- Duygu Grafiği -->
+                <div class="glass-card emotion-card animate-in">
+                    <h3><i class="fas fa-chart-pie"></i> Duygu Spektrumu</h3>
+                    <div class="chart-container">
+                        <canvas id="emotionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Semboller ve Anlamlar -->
+                <div class="glass-card symbols-card animate-in" style="animation-delay: 0.1s;">
+                    <h3><i class="fas fa-key"></i> Rüya Sembolleri</h3>
+                    <ul id="symbol-list" class="symbol-list">
+                        <!-- Semboller buraya eklenecek -->
+                    </ul>
+                </div>
+
+                <!-- Psikolojik Özet -->
+                <div class="glass-card summary-card animate-in" style="animation-delay: 0.2s;">
+                    <h3><i class="fas fa-brain"></i> Bilinçaltı Analizi</h3>
+                    <p id="dream-summary">Analiz sonuçları hazırlanıyor...</p>
+                </div>
+
+                <!-- Görsel Betimleme (Metin Olarak) -->
+                <div class="glass-card visual-card animate-in" style="animation-delay: 0.3s;">
+                    <h3><i class="fas fa-magic"></i> Rüya Sahnesi</h3>
+                    <p id="visual-prompt" class="italic-text">Betimleme hazırlanıyor...</p>
+                </div>
+
+                <!-- Müzik Önerisi -->
+                <div class="glass-card music-card animate-in" style="animation-delay: 0.4s;">
+                    <h3><i class="fas fa-music"></i> Rüya Tınısı</h3>
+                    <div id="music-recommendation" class="music-content">
+                        <p>Analiz ediliyor...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="actions">
+                <button id="reset-btn" class="secondary-btn">Yeni Bir Rüya Yaz</button>
+                <button id="download-btn" class="secondary-btn download-btn">
+                    <i class="fas fa-download"></i> Sonucu İndir
+                </button>
+            </div>
+        </section>
+
+        <!-- Loading State -->
+        <div id="loader" class="loader-container hidden">
+            <div class="dream-loader">
+                <div class="spark"></div>
+                <div class="spark"></div>
+                <div class="spark"></div>
+            </div>
+            <p>Bilinçaltı inceleniyor...</p>
+        </div>
+    </main>
+
+    <footer class="app-footer animate-in" style="animation-delay: 0.5s;">
+        <p>&copy; 2026 Future Talent 201 Bitirme Projesi</p>
+    </footer>
+
+    <script src="app.js" type="module"></script>
+</body>
+</html>
