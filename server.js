@@ -20,7 +20,7 @@ const server = http.createServer(async (req, res) => {
         let filePath = req.url === '/' ? './index.html' : '.' + req.url;
         const extname = path.extname(filePath);
         let contentType = 'text/html';
-        
+
         switch (extname) {
             case '.js': contentType = 'text/javascript'; break;
             case '.css': contentType = 'text/css'; break;
@@ -52,7 +52,7 @@ const server = http.createServer(async (req, res) => {
                 }
 
                 console.log("Analiz isteği geldi, Gemini API'ye bağlanılıyor...");
-                
+
                 const prompt = `Aşağıdaki rüyayı bir Rüya Analisti gibi analiz et ve sonucu SADECE geçerli bir JSON formatında döndür. Hiçbir açıklama ekleme, sadece JSON.
                 
                 JSON şeması: 
@@ -69,7 +69,7 @@ const server = http.createServer(async (req, res) => {
 
                 const options = {
                     hostname: 'generativelanguage.googleapis.com',
-                    path: `/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
+                    path: `/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 };
@@ -78,14 +78,7 @@ const server = http.createServer(async (req, res) => {
                     let data = '';
                     apiRes.on('data', (d) => { data += d; });
                     apiRes.on('end', () => {
-                        const parsedData = JSON.parse(data);
-                        // Eğer hata varsa simülasyon döndür
-                        if (apiRes.statusCode !== 200 || parsedData.error) {
-                            console.warn("API Hatası (Local), Simülasyon moduna geçiliyor...");
-                            res.writeHead(200, { 'Content-Type': 'application/json' });
-                            return res.end(JSON.stringify(getMockResponse(text)));
-                        }
-                        res.writeHead(200, { 'Content-Type': 'application/json' });
+                        res.writeHead(apiRes.statusCode, { 'Content-Type': 'application/json' });
                         res.end(data);
                     });
                 });
