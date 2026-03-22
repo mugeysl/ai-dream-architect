@@ -34,14 +34,13 @@ async function handleAnalyze() {
     loader.classList.remove('hidden');
 
     try {
-        // Orijinal metni sonuç ekranına aktar
         document.getElementById('display-user-dream').innerText = text;
-
         const analysis = await getDreamAnalysis(text);
         displayResults(analysis);
     } catch (error) {
         console.error("Analiz hatası:", error);
-        alert("Rüya analizi sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+        // Backend artık simülasyon döndürdüğü için buraya düşmesi kritik bir hatadır.
+        alert("Bağlantı sorunu oluştu, lütfen internetinizi kontrol edip tekrar deneyin.");
         inputSection.classList.remove('hidden');
     } finally {
         loader.classList.add('hidden');
@@ -66,22 +65,30 @@ async function getDreamAnalysis(text) {
 
     const result = await response.json();
     
+    // Hata kontrolü
+    if (result.error) {
+        console.error("Backend Hatası:", result.error);
+        if (result.error.includes("429") || result.error.includes("quota")) {
+            throw new Error("Google API Kotası Dolmuş (429). Lütfen 1 dakika bekleyip tekrar deneyin veya yeni bir API anahtarı tanımlayın.");
+        }
+        throw new Error(result.error);
+    }
+
     if (!result.candidates || result.candidates.length === 0) {
-        console.error("API Yanıtı boş veya geçersiz:", result);
-        throw new Error("AI uygun bir yanıt oluşturamadı.");
+        console.error("API Yanıtı boş:", result);
+        throw new Error("AI uygun bir yanıt oluşturamadı. Lütfen rüyanızı biraz daha detaylandırın.");
     }
 
     const responseText = result.candidates[0].content.parts[0].text;
     
     try {
-        // JSON bloğunu ayıkla (En dıştaki { } arasını al)
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error("JSON bloğu bulunamadı.");
         
         const cleanJson = jsonMatch[0];
         return JSON.parse(cleanJson);
     } catch (e) {
-        console.error("JSON Ayrıştırma Hatası:", responseText);
+        console.error("JSON Parsing Error:", responseText);
         throw new Error("AI yanıtı beklenen formatta değil.");
     }
 }
