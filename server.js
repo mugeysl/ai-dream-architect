@@ -20,7 +20,7 @@ const server = http.createServer(async (req, res) => {
         let filePath = req.url === '/' ? './index.html' : '.' + req.url;
         const extname = path.extname(filePath);
         let contentType = 'text/html';
-
+        
         switch (extname) {
             case '.js': contentType = 'text/javascript'; break;
             case '.css': contentType = 'text/css'; break;
@@ -52,7 +52,7 @@ const server = http.createServer(async (req, res) => {
                 }
 
                 console.log("Analiz isteği geldi, Gemini API'ye bağlanılıyor...");
-
+                
                 const prompt = `Aşağıdaki rüyayı bir Rüya Analisti gibi analiz et ve sonucu SADECE geçerli bir JSON formatında döndür. Hiçbir açıklama ekleme, sadece JSON.
                 
                 JSON şeması: 
@@ -89,35 +89,16 @@ const server = http.createServer(async (req, res) => {
 
             } catch (err) {
                 console.error("Local Server Hatası:", err.message);
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify(getMockResponse(text)));
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: err.message }));
             }
         });
     }
 });
-
-function getMockResponse(text) {
-    return {
-        candidates: [{
-            content: {
-                parts: [{
-                    text: JSON.stringify({
-                        emotions: { mutluluk: 45, korku: 10, hüzün: 5, şaşkınlık: 30, güven: 60 },
-                        symbols: [{ object: "Bulutlar", meaning: "Duygusal hafiflik ve yüksek idealler." }],
-                        summary: "Bu rüya, hayatınızdaki pozitif yükselişi ve özgürleşme isteğini yansıtıyor. (Simülasyon Modu)",
-                        visual_prompt: "Bulutların üzerinde süzülen bir silüet tasarımı.",
-                        music: "Dreamy Piano"
-                    })
-                }]
-            }
-        }]
-    };
-}
 
 server.listen(PORT, () => {
     console.log(`\n🌙 Rüya Mimarı Yerel Test Sunucusu Başlatıldı!`);
     console.log(`-------------------------------------------`);
     console.log(`👉 Adres: http://localhost:${PORT}`);
     console.log(`👉 Durum: .env dosyasındaki API key kullanılıyor.`);
-    console.log(`Abra (Ctrl+C) ile durdurabilirsiniz.\n`);
 });
